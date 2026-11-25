@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Minha Conta | MoviePlex</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="minha-conta-page">
+
+    
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}">Início</a>
+
+            <form th:action="@{/pesquisar}" method="get" class="pesquisa-header">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Buscar filmes e séries..."
+                    aria-label="Buscar filmes e séries"
+                    required>
+                <button type="submit" aria-label="Pesquisar">⌕</button>
+            </form>
+
+            <a th:href="@{/planos}">Planos</a>
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            <a th:href="@{/minha-conta}" class="active">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+
+    <main class="minha-conta-main">
+
+        <section class="minha-conta-card">
+
+            <div th:if="${sucesso}"
+                th:text="${sucesso}"
+                style="color: #70e0a0; margin-bottom: 20px;">
+            </div>
+
+            <h2>Minha Conta</h2>
+
+            <p class="minha-conta-descricao">
+                Gerencie suas informações pessoais no MoviePlex.
+            </p>
+
+            <div class="perfil-informacoes">
+
+                <div class="perfil-avatar">
+                    <span th:text="${#strings.substring(usuario.nome, 0, 1)}">U</span>
+                </div>
+
+                <h3 th:text="${usuario.nome}">Nome do usuário</h3>
+
+                <p th:text="${usuario.email}">
+                    usuario@email.com
+                </p>
+
+            </div>
+
+            <div class="conta-acoes">
+
+                <a th:href="@{/minha-assinatura}" class="conta-link">
+                    Minha assinatura
+                </a>
+
+                <a th:href="@{/minha-conta/editar}" class="plano-button">
+                    Editar meus dados
+                </a>
+
+                <a th:href="@{/planos}" class="conta-link">
+                    Gerenciar assinatura
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2026 MoviePlex. Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>

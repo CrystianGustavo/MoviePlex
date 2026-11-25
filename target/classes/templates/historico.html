@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Histórico | MoviePlex</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}">Início</a>
+
+            <form th:action="@{/pesquisar}" method="get"
+                  class="pesquisa-header">
+
+                <input type="text" name="q"
+                       placeholder="Buscar filmes e séries..."
+                       aria-label="Buscar filmes e séries"
+                       required>
+
+                <button type="submit" aria-label="Pesquisar">⌕</button>
+            </form>
+
+            <a th:href="@{/planos}">Planos</a>
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            <a th:href="@{/historico}" class="active">Histórico</a>
+            <a th:href="@{/minha-conta}">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+    <main class="historico-container">
+
+        <section class="historico-intro">
+
+            <span class="historico-tag">SUA EXPERIÊNCIA</span>
+
+            <h1>Meu <span>Histórico</span></h1>
+
+            <p>
+                Acompanhe seus filmes e séries e continue de onde parou.
+            </p>
+
+        </section>
+
+        <div th:if="${sucesso}" class="historico-alerta sucesso"
+             th:text="${sucesso}">
+        </div>
+
+        <div th:if="${erro}" class="historico-alerta erro"
+             th:text="${erro}">
+        </div>
+
+        <!-- CONTINUAR ASSISTINDO -->
+
+        <section class="historico-secao">
+
+            <div class="historico-titulo-secao">
+
+                <div>
+                    <h2>Continuar Assistindo</h2>
+                    <p>Retome seus conteúdos de onde parou.</p>
+                </div>
+
+                <span class="historico-contador"
+                      th:text="${emAndamento.size()} + ' conteúdos'">
+                    0 conteúdos
+                </span>
+
+            </div>
+
+            <div th:if="${#lists.isEmpty(emAndamento)}"
+                 class="historico-vazio">
+
+                <span class="historico-vazio-icon">▶</span>
+
+                <h3>Nenhum conteúdo em andamento</h3>
+
+                <p>
+                    Quando você começar a assistir algo, ele aparecerá aqui.
+                </p>
+
+                <a th:href="@{/inicio}" class="historico-botao">
+                    Explorar catálogo
+                </a>
+
+            </div>
+
+            <div class="historico-grid"
+                 th:if="${!#lists.isEmpty(emAndamento)}">
+
+                <article class="historico-card"
+                         th:each="item : ${emAndamento}">
+
+                    <div class="historico-poster">
+
+                        <img th:if="${item.posterPath != null}"
+                             th:src="${'https://image.tmdb.org/t/p/w500' + item.posterPath}"
+                             th:alt="${item.titulo}">
+
+                        <div th:if="${item.posterPath == null}"
+                             class="historico-sem-poster">
+                            MoviePlex
+                        </div>
+
+                        <span class="historico-tipo"
+                              th:text="${item.tipo == 'tv' ? 'SÉRIE' : 'FILME'}">
+                            FILME
+                        </span>
+
+                    </div>
+
+                    <div class="historico-card-info">
+
+                        <h3 th:text="${item.titulo}">Título</h3>
+
+                        <p th:if="${item.tipo == 'tv'}"
+                           th:text="'Temporada ' + ${item.temporada}
+                                    + ' • Episódio ' + ${item.episodio}">
+                            Temporada 1 • Episódio 1
+                        </p>
+
+                        <p th:if="${item.tipo == 'movie'}">
+                            Filme
+                        </p>
+
+                        <div class="historico-progresso">
+
+                            <div class="historico-progresso-barra">
+
+                                <div class="historico-progresso-preenchimento"
+                                     th:style="'width: '
+                                     + ${item.calcularPorcentagem()} + '%'">
+                                </div>
+
+                            </div>
+
+                            <span th:text="${#numbers.formatDecimal(
+                                item.calcularPorcentagem(), 1, 0
+                            ) + '% assistido'}">
+                                0% assistido
+                            </span>
+
+                        </div>
+
+                        <div class="historico-acoes">
+
+                            <form th:action="@{/historico/concluir}"
+                                  method="post">
+
+                                <input type="hidden" name="id"
+                                       th:value="${item.id}">
+
+                                <button type="submit"
+                                        class="historico-concluir">
+                                    Marcar como assistido
+                                </button>
+
+                            </form>
+
+                            <form th:action="@{/historico/remover}"
+                                  method="post"
+                                  onsubmit="return confirm(
+                                      'Deseja remover este conteúdo do histórico?'
+                                  );">
+
+                                <input type="hidden" name="id"
+                                       th:value="${item.id}">
+
+                                <button type="submit"
+                                        class="historico-remover">
+                                    Remover
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- HISTÓRICO COMPLETO -->
+
+        <section class="historico-secao">
+
+            <div class="historico-titulo-secao">
+
+                <div>
+                    <h2>Todos os Registros</h2>
+                    <p>Confira todos os conteúdos registrados.</p>
+                </div>
+
+                <span class="historico-contador"
+                      th:text="${historicos.size()} + ' registros'">
+                    0 registros
+                </span>
+
+            </div>
+
+            <div th:if="${#lists.isEmpty(historicos)}"
+                 class="historico-vazio">
+
+                <h3>Seu histórico está vazio</h3>
+
+                <p>
+                    Seus filmes e séries assistidos aparecerão aqui.
+                </p>
+
+            </div>
+
+            <div class="historico-lista"
+                 th:if="${!#lists.isEmpty(historicos)}">
+
+                <article class="historico-item"
+                         th:each="item : ${historicos}">
+
+                    <img th:if="${item.posterPath != null}"
+                         th:src="${'https://image.tmdb.org/t/p/w200' + item.posterPath}"
+                         th:alt="${item.titulo}">
+
+                    <div th:if="${item.posterPath == null}"
+                         class="historico-poster-mini">
+                        M
+                    </div>
+
+                    <div class="historico-item-info">
+
+                        <h3 th:text="${item.titulo}">Título</h3>
+
+                        <span th:text="${item.tipo == 'tv' ? 'Série' : 'Filme'}">
+                            Filme
+                        </span>
+
+                        <small th:text="${item.concluido
+                            ? 'Assistido'
+                            : 'Em andamento'}">
+                            Em andamento
+                        </small>
+
+                    </div>
+
+                    <div class="historico-item-status">
+
+                        <span th:if="${item.concluido}"
+                              class="historico-status-concluido">
+                            Concluído
+                        </span>
+
+                        <span th:unless="${item.concluido}"
+                              class="historico-status-andamento">
+                            Em andamento
+                        </span>
+
+                    </div>
+
+                    <form th:action="@{/historico/remover}"
+                          method="post"
+                          onsubmit="return confirm(
+                              'Deseja remover este registro?'
+                          );">
+
+                        <input type="hidden" name="id"
+                               th:value="${item.id}">
+
+                        <button type="submit"
+                                class="historico-remover">
+                            Remover
+                        </button>
+
+                    </form>
+
+                </article>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editar Perfil | MoviePlex</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="minha-conta-page">
+
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}">Início</a>
+
+            <form th:action="@{/pesquisar}" method="get" class="pesquisa-header">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Buscar filmes e séries..."
+                    aria-label="Buscar filmes e séries"
+                    required>
+                <button type="submit" aria-label="Pesquisar">⌕</button>
+            </form>
+
+            <a th:href="@{/planos}">Planos</a>
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            <a th:href="@{/minha-conta}" class="active">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+    <main class="editar-perfil-main">
+
+        <section class="editar-perfil-card">
+
+            <h2>Editar meus dados</h2>
+
+            <p class="editar-perfil-descricao">
+                Atualize suas informações pessoais.
+            </p>
+
+            <div class="mensagem-erro"
+                 th:if="${erro}"
+                 th:text="${erro}">
+            </div>
+
+            <form th:action="@{/minha-conta/editar}" method="post">
+
+                <div class="campo-perfil">
+                    <label for="nome">Nome completo</label>
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        th:value="${usuario.nome}"
+                        maxlength="100"
+                        required>
+                </div>
+
+                <div class="campo-perfil">
+                    <label for="email">E-mail</label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        th:value="${usuario.email}"
+                        maxlength="150"
+                        required>
+                </div>
+
+                <div class="divisor-perfil"></div>
+
+                <h3>Alterar senha</h3>
+
+                <p class="editar-perfil-descricao">
+                    Deixe os campos de senha vazios se não quiser alterá-la.
+                </p>
+
+                <div class="campo-perfil">
+                    <label for="senhaAtual">Senha atual</label>
+
+                    <input
+                        type="password"
+                        id="senhaAtual"
+                        name="senhaAtual"
+                        autocomplete="current-password">
+                </div>
+
+                <div class="campo-perfil">
+                    <label for="novaSenha">Nova senha</label>
+
+                    <input
+                        type="password"
+                        id="novaSenha"
+                        name="novaSenha"
+                        minlength="6"
+                        autocomplete="new-password">
+                </div>
+
+                <div class="campo-perfil">
+                    <label for="confirmarSenha">Confirmar nova senha</label>
+
+                    <input
+                        type="password"
+                        id="confirmarSenha"
+                        name="confirmarSenha"
+                        minlength="6"
+                        autocomplete="new-password">
+                </div>
+
+                <div class="editar-perfil-acoes">
+
+                    <button type="submit" class="plano-button">
+                        Salvar alterações
+                    </button>
+
+                    <a th:href="@{/minha-conta}" class="conta-link">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2026 MoviePlex. Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MoviePlex | Entrar</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <main class="login-container">
+
+        <section class="login-card">
+
+            <div class="logo">
+                <span class="logo-icon">M</span>
+                <h1>Movie<span>Plex</span></h1>
+            </div>
+
+            <div class="login-header">
+                <h2>Bem-vindo de volta</h2>
+                <p>Entre na sua conta para continuar assistindo.</p>
+            </div>
+
+            <div th:if="${sucesso}"
+     class="mensagem-sucesso"
+     th:text="${sucesso}"
+     style="
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 15px;
+        margin: 22px 0;
+        background-color: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        border-radius: 8px;
+        color: #4ade80;
+        font-size: 14px;
+        line-height: 1.5;
+     ">
+</div>
+
+            <form class="login-form" th:action="@{/login}" method="post">
+
+                <p th:if="${erro}"
+                    th:text="${erro}"
+                    style="color: #ff6b6b; margin-bottom: 15px;">
+                </p>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite sua senha"
+                        required
+                    >
+                </div>
+
+                <div class="form-options">
+                    <label class="remember">
+                        <input type="checkbox">
+                        Lembrar de mim
+                    </label>
+
+                    <a href="#">Esqueceu a senha?</a>
+                </div>
+
+                <button type="submit" class="login-button">
+                    Entrar
+                </button>
+
+            </form>
+
+            <div class="register-link">
+                <p>Ainda não tem uma conta?
+                    <a th:href="@{/cadastro}">Cadastre-se</a>
+                </p>
+            </div>
+
+            <footer>
+                <p>© 2026 MoviePlex. Nenhum direito reservado. :D</p>
+            </footer>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
-package main.java.movieplex.model;
+
+package movieplex.model;
 
 import java.time.LocalDate;
 
@@ -23,15 +24,13 @@ public class Avaliacao {
         this.dataAvaliacao = LocalDate.now();
     }
 
-    // Validar nota
     public boolean validarNota() {
         return nota >= 1 && nota <= 5;
     }
 
-    // Salvar avaliação
     public boolean salvarAvaliacao() {
 
-        if (!validarNota()) {
+        if (!validarNota() || usuario == null || producao == null) {
             return false;
         }
 
@@ -39,7 +38,8 @@ public class Avaliacao {
 
         for (Historico historico : usuario.getHistoricos()) {
 
-            if (historico.getProducao() == producao
+            if (historico.getTitulo() != null
+                    && historico.getTitulo().equalsIgnoreCase(producao.getTitulo())
                     && historico.verificarConteudoAssistido()) {
 
                 assistiu = true;
@@ -57,7 +57,6 @@ public class Avaliacao {
         return true;
     }
 
-    // Editar avaliação
     public boolean editarAvaliacao(int novaNota, String novoComentario) {
 
         if (novaNota < 1 || novaNota > 5) {
@@ -71,7 +70,6 @@ public class Avaliacao {
         return true;
     }
 
-    // Getters
     public int getId() {
         return id;
     }

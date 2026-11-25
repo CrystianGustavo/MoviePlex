@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Detalhes | MoviePlex</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="detalhes-page">
+
+    <!-- CABEÇALHO -->
+
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}">Início</a>
+
+            <form th:action="@{/pesquisar}" method="get" class="pesquisa-header">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Buscar filmes e séries..."
+                    aria-label="Buscar filmes e séries..."
+                    required>
+                <button type="submit" aria-label="Pesquisar">⌕</button>
+            </form>
+
+            <a th:href="@{/planos}">Planos</a>
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            <a th:href="@{/minha-conta}">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+    <main class="detalhes-container">
+
+        <!-- DESTAQUE DO CONTEÚDO -->
+
+        <section class="detalhes-banner">
+
+            <!-- IMAGEM DE FUNDO -->
+
+            <img
+                class="detalhes-backdrop"
+                th:if="${conteudo.get('backdrop_path') != null
+                    and !conteudo.get('backdrop_path').isNull()}"
+                th:src="${'https://image.tmdb.org/t/p/original'
+                    + conteudo.get('backdrop_path').asText()}"
+                alt="Imagem de fundo">
+
+            <div class="detalhes-overlay"></div>
+
+            <div class="detalhes-conteudo">
+
+                <!-- PÔSTER -->
+
+                <div class="detalhes-poster-container">
+
+                    <img
+                        class="detalhes-poster"
+                        th:if="${conteudo.get('poster_path') != null
+                            and !conteudo.get('poster_path').isNull()}"
+                        th:src="${'https://image.tmdb.org/t/p/w500'
+                            + conteudo.get('poster_path').asText()}"
+                        alt="Pôster">
+
+                    <div
+                        class="detalhes-poster-placeholder"
+                        th:unless="${conteudo.get('poster_path') != null
+                            and !conteudo.get('poster_path').isNull()}">
+                        MoviePlex
+                    </div>
+
+                </div>
+
+                <!-- INFORMAÇÕES -->
+
+                <div class="detalhes-informacoes">
+
+                    <span
+                        class="detalhes-tipo"
+                        th:text="${tipo == 'movie' ? 'FILME' : 'SÉRIE'}">
+                        FILME
+                    </span>
+
+                    <h1 th:text="${conteudo.get('title') != null
+                        ? conteudo.get('title').asText()
+                        : conteudo.get('name').asText()}">
+                        Título
+                    </h1>
+
+                    <!-- TAGLINE -->
+
+                    <p
+                        class="detalhes-tagline"
+                        th:if="${conteudo.get('tagline') != null
+                            and !conteudo.get('tagline').asText().isEmpty()}"
+                        th:text="${conteudo.get('tagline').asText()}">
+                    </p>
+
+                    <!-- METADADOS -->
+
+                    <div class="detalhes-metadados">
+
+                        <span th:if="${conteudo.get('vote_average') != null}">
+                            ⭐
+                            <strong th:text="${#numbers.formatDecimal(
+                                conteudo.get('vote_average').asDouble(), 1, 1)}">
+                                8.5
+                            </strong>
+                        </span>
+
+                        <span
+                            th:if="${conteudo.get('release_date') != null
+                                and !conteudo.get('release_date').asText().isEmpty()}"
+                            th:text="${#strings.substring(
+                                conteudo.get('release_date').asText(), 0, 4)}">
+                            2026
+                        </span>
+
+                        <span
+                            th:if="${conteudo.get('first_air_date') != null
+                                and !conteudo.get('first_air_date').asText().isEmpty()}"
+                            th:text="${#strings.substring(
+                                conteudo.get('first_air_date').asText(), 0, 4)}">
+                            2026
+                        </span>
+
+                        <span
+                            th:if="${tipo == 'movie'
+                                and conteudo.get('runtime') != null
+                                and !conteudo.get('runtime').isNull()}"
+                            th:text="${conteudo.get('runtime').asText() + ' min'}">
+                            120 min
+                        </span>
+
+                        <span
+                            th:if="${tipo == 'tv'
+                                and conteudo.get('number_of_seasons') != null}"
+                            th:text="${conteudo.get('number_of_seasons').asText() + ' temporada(s)'}">
+                            2 temporadas
+                        </span>
+
+                    </div>
+
+                    <!-- GÊNEROS -->
+
+                    <div
+                        class="detalhes-generos"
+                        th:if="${conteudo.get('genres') != null}">
+
+                        <span
+                            th:each="genero : ${conteudo.get('genres')}"
+                            th:text="${genero.get('name').asText()}">
+                            Ação
+                        </span>
+
+                    </div>
+
+                    <!-- SINOPSE -->
+
+                    <h2>Sinopse</h2>
+
+                    <p
+                        class="detalhes-sinopse"
+                        th:text="${conteudo.get('overview') != null
+                            and !conteudo.get('overview').asText().isEmpty()
+                            ? conteudo.get('overview').asText()
+                            : 'Sinopse não disponível.'}">
+                        Sinopse do conteúdo.
+                    </p>
+
+                    <!-- AÇÕES PRINCIPAIS -->
+
+                    <div class="detalhes-acoes-reproducao">
+
+                        
+                    <!-- BOTÃO DE REPRODUÇÃO DINÂMICO -->
+
+                    <a
+                        th:if="${possuiTrailer}"
+                        th:href="@{/assistir/{id}(id=${conteudo.get('id').asLong()}, tipo=${tipo})}"
+                        class="detalhes-assistir-button"
+                        th:title="${jaAssistido ? 'Assistir novamente' : (foiIniciado ? 'Continuar assistindo' : 'Assistir agora')}">
+
+                        <span class="assistir-icone">▶</span>
+
+                        <span
+                            th:text="${jaAssistido ? 'Assistir novamente' : (foiIniciado ? 'Continuar assistindo' : 'Assistir agora')}">
+                            Assistir agora
+                        </span>
+
+                    </a>
+
+
+                        <!-- VÍDEO INDISPONÍVEL -->
+
+                        <span
+                            class="detalhes-sem-trailer"
+                            th:unless="${possuiTrailer}">
+
+                            Vídeo indisponível no MoviePlex
+
+                        </span>
+
+                        <!-- TRAILER DO YOUTUBE -->
+
+                        <a
+                            class="detalhes-trailer-button"
+                            th:if="${conteudo.get('videos') != null
+                                and conteudo.get('videos').get('results') != null
+                                and !conteudo.get('videos').get('results').isEmpty()
+                                and conteudo.get('videos').get('results').get(0).get('key') != null}"
+                            th:href="${'https://www.youtube.com/watch?v='
+                                + conteudo.get('videos').get('results').get(0).get('key').asText()}"
+                            target="_blank"
+                            rel="noopener noreferrer">
+
+                            <span>▶</span>
+                            <span>Assistir trailer no YouTube</span>
+
+                        </a>
+
+                        <!-- MINHA LISTA: ADICIONAR -->
+
+                        <form
+                            th:if="${estaSalvo == false}"
+                            th:action="@{/minha-lista/adicionar}"
+                            method="post"
+                            class="minha-lista-icone-form">
+
+                            <input
+                                type="hidden"
+                                name="tmdbId"
+                                th:value="${conteudo.get('id').asLong()}">
+
+                            <input
+                                type="hidden"
+                                name="tipo"
+                                th:value="${tipo}">
+
+                            <input
+                                type="hidden"
+                                name="titulo"
+                                th:value="${conteudo.get('title') != null
+                                    ? conteudo.get('title').asText()
+                                    : conteudo.get('name').asText()}">
+
+                            <input
+                                type="hidden"
+                                name="posterPath"
+                                th:value="${conteudo.get('poster_path') != null
+                                    and !conteudo.get('poster_path').isNull()
+                                    ? conteudo.get('poster_path').asText()
+                                    : ''}">
+
+                            <input
+                                type="hidden"
+                                name="backdropPath"
+                                th:value="${conteudo.get('backdrop_path') != null
+                                    and !conteudo.get('backdrop_path').isNull()
+                                    ? conteudo.get('backdrop_path').asText()
+                                    : ''}">
+
+                            <button
+                                type="submit"
+                                class="minha-lista-adicionar"
+                                aria-label="Adicionar à Minha Lista"
+                                title="Adicionar à Minha Lista">
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="23"
+                                    height="23"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round">
+
+                                    <path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-4-6 4z"/>
+
+                                </svg>
+
+                            </button>
+
+                        </form>
+
+                        <!-- MINHA LISTA: REMOVER -->
+
+                        <form
+                            th:if="${estaSalvo == true}"
+                            th:action="@{/minha-lista/remover}"
+                            method="post"
+                            class="minha-lista-icone-form">
+
+                            <input
+                                type="hidden"
+                                name="id"
+                                th:value="${conteudoSalvoId}">
+
+                            <button
+                                type="submit"
+                                class="minha-lista-remover"
+                                aria-label="Remover da Minha Lista"
+                                title="Remover da Minha Lista">
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="23"
+                                    height="23"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    stroke="currentColor"
+                                    stroke-width="1.2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round">
+
+                                    <path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-4-6 4z"/>
+
+                                </svg>
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    <!-- PROGRESSO DE REPRODUÇÃO -->
+
+                    <div
+                        class="detalhes-status-reproducao"
+                        th:if="${(progresso > 0 and !jaAssistido) or jaAssistido}">
+
+                        <span
+                            class="detalhes-progresso"
+                            th:if="${progresso > 0 and !jaAssistido}">
+
+                            Você parou em
+                            <strong th:text="${#numbers.formatDecimal(progresso / 60, 1, 1) + ' min'}">
+                                10 min
+                            </strong>
+
+                        </span>
+
+                        <span
+                            class="detalhes-concluido"
+                            th:if="${jaAssistido}">
+
+                            ✓ Conteúdo concluído
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ELENCO -->
+
+        <section
+            class="detalhes-elenco"
+            th:if="${conteudo.get('credits') != null
+                and conteudo.get('credits').get('cast') != null
+                and !conteudo.get('credits').get('cast').isEmpty()}">
+
+            <h2>Elenco principal</h2>
+
+            <div class="elenco-lista">
+
+                <article
+                    class="elenco-card"
+                    th:each="ator, iter : ${conteudo.get('credits').get('cast')}"
+                    th:if="${iter.index < 10}">
+
+                    <img
+                        th:if="${ator.get('profile_path') != null
+                            and !ator.get('profile_path').isNull()}"
+                        th:src="${'https://image.tmdb.org/t/p/w185'
+                            + ator.get('profile_path').asText()}"
+                        th:alt="${ator.get('name').asText()}">
+
+                    <div
+                        class="elenco-sem-foto"
+                        th:unless="${ator.get('profile_path') != null
+                            and !ator.get('profile_path').isNull()}">
+                        MP
+                    </div>
+
+                    <h3 th:text="${ator.get('name').asText()}">
+                        Ator
+                    </h3>
+
+                    <p
+                        th:text="${ator.get('character') != null
+                            ? ator.get('character').asText()
+                            : 'Personagem'}">
+                        Personagem
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- VOLTAR AO CATÁLOGO -->
+
+        <a th:href="@{/inicio}" class="detalhes-voltar">
+            ← Voltar ao catálogo
+        </a>
+
+    </main>
+
+</body>
+</html>

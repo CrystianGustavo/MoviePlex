@@ -1,4 +1,4 @@
-package main.java.movieplex.model;
+package movieplex.model;
 
 import java.util.ArrayList;
 import java.util.List;

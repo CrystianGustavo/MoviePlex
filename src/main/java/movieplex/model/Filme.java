@@ -1,4 +1,5 @@
-package main.java.movieplex.model;
+package movieplex.model;
+
 
 public class Filme extends Producao {
 

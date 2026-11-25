@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MoviePlex | Planos</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="planos-page">
+
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}">Início</a>
+
+            <a th:href="@{/planos}" class="active">Planos</a>
+
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            
+            <a th:href="@{/minha-conta}">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+    <main class="planos-main">
+
+        <section class="planos-intro">
+
+            <span class="hero-etiqueta">
+                ESCOLHA SUA EXPERIÊNCIA
+            </span>
+
+            <h2>Um MoviePlex para cada momento.</h2>
+
+            <p>
+                Escolha o plano ideal para você e aproveite
+                nosso catálogo completo de filmes e séries.
+            </p>
+
+        </section>
+
+        <!-- MENSAGENS DO SISTEMA -->
+
+        <div th:if="${erro}"
+             class="mensagem-erro"
+             th:text="${erro}">
+        </div>
+
+        <div th:if="${sucesso}"
+             class="mensagem-sucesso"
+             th:text="${sucesso}">
+        </div>
+
+        <!-- AVISO DE ASSINATURA EXISTENTE -->
+
+        <div th:if="${possuiAssinatura}"
+             class="mensagem-sucesso">
+            Você já possui uma assinatura ativa!
+        </div>
+
+        <section class="planos-container">
+
+            <!-- PLANO BÁSICO -->
+
+            <article class="plano-card">
+
+                <div class="plano-cabecalho">
+                    <h3>MoviePlex Básico</h3>
+
+                    <span class="plano-subtitulo">
+                        Com anúncios
+                    </span>
+                </div>
+
+                <div class="plano-preco">
+                    <strong>R$ 14,90</strong>
+                    <span>/ mês</span>
+                </div>
+
+                <div class="plano-divisor"></div>
+
+                <ul class="plano-beneficios">
+                    <li>Qualidade HD (720p)</li>
+                    <li>1 tela simultânea</li>
+                    <li>Catálogo completo de filmes e séries</li>
+                </ul>
+
+                <form th:action="@{/assinatura/contratar}" method="post">
+
+                    <input type="hidden"
+                           name="plano"
+                           value="BASICO">
+
+                    <button type="submit"
+                            class="plano-button"
+                            th:disabled="${possuiAssinatura}">
+                        Assinar plano
+                    </button>
+
+                </form>
+
+            </article>
+
+
+            <!-- PLANO PADRÃO -->
+
+            <article class="plano-card plano-destaque">
+
+                <div class="plano-popular">
+                    MAIS POPULAR
+                </div>
+
+                <div class="plano-cabecalho">
+                    <h3>MoviePlex Padrão</h3>
+                </div>
+
+                <div class="plano-preco">
+                    <strong>R$ 24,90</strong>
+                    <span>/ mês</span>
+                </div>
+
+                <div class="plano-divisor"></div>
+
+                <ul class="plano-beneficios">
+                    <li>Qualidade Full HD (1080p)</li>
+                    <li>2 telas simultâneas</li>
+                    <li>Catálogo completo de filmes e séries</li>
+                </ul>
+
+                <form th:action="@{/assinatura/contratar}" method="post">
+
+                    <input type="hidden"
+                           name="plano"
+                           value="PADRAO">
+
+                    <button type="submit"
+                            class="plano-button"
+                            th:disabled="${possuiAssinatura}">
+                        Assinar plano
+                    </button>
+
+                </form>
+
+            </article>
+
+
+            <!-- PLANO PREMIUM -->
+
+            <article class="plano-card">
+
+                <div class="plano-cabecalho">
+                    <h3>MoviePlex Premium</h3>
+                </div>
+
+                <div class="plano-preco">
+                    <strong>R$ 34,90</strong>
+                    <span>/ mês</span>
+                </div>
+
+                <div class="plano-divisor"></div>
+
+                <ul class="plano-beneficios">
+                    <li>Qualidade 4K (Ultra HD)</li>
+                    <li>4 telas simultâneas</li>
+                    <li>Catálogo completo de filmes e séries</li>
+                    <li>Acesso prioritário a lançamentos</li>
+                </ul>
+
+                <form th:action="@{/assinatura/contratar}" method="post">
+
+                    <input type="hidden"
+                           name="plano"
+                           value="PREMIUM">
+
+                    <button type="submit"
+                            class="plano-button"
+                            th:disabled="${possuiAssinatura}">
+                        Assinar plano
+                    </button>
+
+                </form>
+
+            </article>
+
+        </section>
+
+        <p class="planos-observacao">
+            A contratação é demonstrativa e não envolve pagamentos reais.
+        </p>
+
+        <div class="planos-voltar">
+            <a th:href="@{/inicio}">
+                ← Voltar ao catálogo
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="catalogo-footer">
+
+        <p>© 2026 MoviePlex. Nenhum direito reservado. :D</p>
+
+        <p>Dados e imagens de filmes e séries fornecidos pela TMDB.</p>
+
+    </footer>
+
+</body>
+</html>

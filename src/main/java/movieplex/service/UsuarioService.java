@@ -1,63 +1,115 @@
 
-package main.java.movieplex.service;
+package movieplex.service;
 
-import movieplex.model.Usuario;
-import movieplex.model.Assinatura;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import movieplex.model.Assinatura;
+import movieplex.model.Usuario;
+import movieplex.repository.UsuarioRepository;
+
+@Service
 public class UsuarioService {
 
-    private List<Usuario> usuarios;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService() {
-        this.usuarios = new ArrayList<>();
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
+
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // R1 - Cadastrar usuário
+    @Transactional
     public boolean cadastrarUsuario(Usuario usuario) {
 
-        if (usuario == null || usuario.getEmail() == null
-                || usuario.getEmail().isBlank()) {
+        if (usuario == null
+                || usuario.getEmail() == null
+                || usuario.getEmail().isBlank()
+                || usuario.getSenha() == null
+                || usuario.getSenha().isBlank()
+                || usuario.getNome() == null
+                || usuario.getNome().isBlank()) {
             return false;
         }
 
-        for (Usuario existente : usuarios) {
-            if (existente.getEmail().equalsIgnoreCase(usuario.getEmail())) {
-                return false;
-            }
+        if (usuarioRepository.existsByEmailIgnoreCase(
+                usuario.getEmail().trim())) {
+            return false;
         }
 
-        usuarios.add(usuario);
+        usuario.setNome(usuario.getNome().trim());
+        usuario.setEmail(usuario.getEmail().trim());
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+
+        usuarioRepository.save(usuario);
+
         return true;
     }
 
     // R2 - Alterar cadastro
-    public boolean alterarCadastro(String email,
-                                   String novoNome,
-                                   String novoEmail,
-                                   String novaSenha) {
+    @Transactional
+    public boolean alterarCadastro(
+            Long id,
+            String nome,
+            String email,
+            String senhaAtual,
+            String novaSenha) {
 
-        Usuario usuario = buscarUsuario(email);
+        Usuario usuario = usuarioRepository.findById(id).orElse(null);
 
-        if (usuario == null || novoEmail == null
-                || novoEmail.isBlank()) {
+        if (usuario == null || nome == null || email == null) {
             return false;
         }
 
-        Usuario outro = buscarUsuario(novoEmail);
+        nome = nome.trim();
+        email = email.trim();
 
-        if (outro != null && outro != usuario) {
+        if (nome.isBlank() || email.isBlank()) {
             return false;
         }
 
-        usuario.atualizarPerfil(novoNome, novoEmail, novaSenha);
+        Usuario usuarioComEmail = buscarUsuario(email);
+
+        if (usuarioComEmail != null
+                && !usuarioComEmail.getId().equals(id)) {
+            return false;
+        }
+
+        if (novaSenha != null && !novaSenha.isBlank()) {
+
+            if (senhaAtual == null || senhaAtual.isBlank()) {
+                return false;
+            }
+
+            if (!passwordEncoder.matches(
+                    senhaAtual, usuario.getSenha())) {
+                return false;
+            }
+
+            if (novaSenha.length() < 6) {
+                return false;
+            }
+
+            usuario.setSenha(passwordEncoder.encode(novaSenha));
+        }
+
+        usuario.setNome(nome);
+        usuario.setEmail(email);
+
+        usuarioRepository.save(usuario);
+
         return true;
     }
 
     // R3 - Excluir cadastro
+    @Transactional
     public boolean excluirCadastro(String email) {
 
         Usuario usuario = buscarUsuario(email);
@@ -66,12 +118,17 @@ public class UsuarioService {
             return false;
         }
 
-        usuarios.remove(usuario);
+        usuarioRepository.delete(usuario);
+
         return true;
     }
 
     // R4 - Realizar login
     public Usuario realizarLogin(String email, String senha) {
+
+        if (email == null || senha == null) {
+            return null;
+        }
 
         Usuario usuario = buscarUsuario(email);
 
@@ -79,7 +136,7 @@ public class UsuarioService {
             return null;
         }
 
-        if (usuario.realizarLogin(email, senha)) {
+        if (passwordEncoder.matches(senha, usuario.getSenha())) {
             return usuario;
         }
 
@@ -87,43 +144,108 @@ public class UsuarioService {
     }
 
     // R5 - Realizar assinatura
-    public boolean realizarAssinatura(String email,
-                                      Assinatura assinatura) {
+    @Transactional
+    public boolean realizarAssinatura(
+            String email,
+            Assinatura novaAssinatura) {
 
         Usuario usuario = buscarUsuario(email);
 
-        if (usuario == null || assinatura == null
-                || !assinatura.validarAssinatura()) {
+        if (usuario == null
+                || novaAssinatura == null
+                || !novaAssinatura.validarAssinatura()) {
             return false;
         }
 
-        usuario.adicionarAssinatura(assinatura);
+        Assinatura assinaturaExistente = usuario.getAssinatura();
+
+        // Se já possui assinatura ativa, impede uma segunda contratação.
+        if (assinaturaExistente != null
+                && assinaturaExistente.validarAssinatura()) {
+            return false;
+        }
+
+        // Se possui assinatura cancelada ou expirada, reativa o registro.
+        if (assinaturaExistente != null) {
+
+            assinaturaExistente.reativarAssinatura(
+                    novaAssinatura.getPlano(),
+                    novaAssinatura.getValor(),
+                    novaAssinatura.getDataInicio(),
+                    novaAssinatura.getDataFim()
+            );
+
+        } else {
+
+            // Se nunca teve assinatura, cria uma nova.
+            usuario.adicionarAssinatura(novaAssinatura);
+        }
+
+        usuarioRepository.save(usuario);
+
         return true;
     }
 
     // R6 - Alterar assinatura
-    public boolean alterarAssinatura(String email,
-                                     String novoPlano,
-                                     double novoValor) {
+    @Transactional
+    public boolean alterarAssinatura(
+            String email,
+            String novoPlano,
+            double novoValor) {
 
         Usuario usuario = buscarUsuario(email);
 
-        if (usuario == null || novoPlano == null
-                || novoPlano.isBlank() || novoValor <= 0) {
+        if (usuario == null
+                || novoPlano == null
+                || novoValor <= 0) {
             return false;
         }
 
-        for (Assinatura assinatura : usuario.getAssinaturas()) {
-            if (assinatura.validarAssinatura()) {
-                assinatura.alterarPlano(novoPlano, novoValor);
-                return true;
-            }
+        if (!novoPlano.equals("BASICO")
+                && !novoPlano.equals("PADRAO")
+                && !novoPlano.equals("PREMIUM")) {
+            return false;
         }
 
-        return false;
+        double valorEsperado;
+
+        switch (novoPlano) {
+            case "BASICO":
+                valorEsperado = 14.90;
+                break;
+
+            case "PADRAO":
+                valorEsperado = 24.90;
+                break;
+
+            case "PREMIUM":
+                valorEsperado = 34.90;
+                break;
+
+            default:
+                return false;
+        }
+
+        if (Double.compare(novoValor, valorEsperado) != 0) {
+            return false;
+        }
+
+        Assinatura assinatura = usuario.getAssinatura();
+
+        if (assinatura == null
+                || !assinatura.validarAssinatura()) {
+            return false;
+        }
+
+        assinatura.alterarPlano(novoPlano, novoValor);
+
+        usuarioRepository.save(usuario);
+
+        return true;
     }
 
     // R7 - Cancelar assinatura
+    @Transactional
     public boolean cancelarAssinatura(String email) {
 
         Usuario usuario = buscarUsuario(email);
@@ -132,34 +254,34 @@ public class UsuarioService {
             return false;
         }
 
-        for (Assinatura assinatura : usuario.getAssinaturas()) {
-            if (assinatura.isAtivo()) {
-                assinatura.cancelarAssinatura();
-                return true;
-            }
+        Assinatura assinatura = usuario.getAssinatura();
+
+        if (assinatura == null
+                || !assinatura.validarAssinatura()) {
+            return false;
         }
 
-        return false;
+        assinatura.cancelarAssinatura();
+
+        usuarioRepository.save(usuario);
+
+        return true;
     }
 
     // Buscar usuário
     public Usuario buscarUsuario(String email) {
 
-        if (email == null) {
+        if (email == null || email.isBlank()) {
             return null;
         }
 
-        for (Usuario usuario : usuarios) {
-            if (usuario.getEmail().equalsIgnoreCase(email)) {
-                return usuario;
-            }
-        }
-
-        return null;
+        return usuarioRepository
+                .findByEmailIgnoreCase(email.trim())
+                .orElse(null);
     }
 
     // Listar usuários
     public List<Usuario> listarUsuarios() {
-        return new ArrayList<>(usuarios);
+        return usuarioRepository.findAll();
     }
 }

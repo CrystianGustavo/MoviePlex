@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${titulo + ' | MoviePlex'}">MoviePlex Player</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="player-page">
+
+    <header class="player-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <a
+            th:href="@{/detalhes/{id}(id=${tmdbId}, tipo=${tipo})}"
+            class="player-voltar">
+            ← Voltar aos detalhes
+        </a>
+
+    </header>
+
+    <main class="player-container">
+
+        <div class="player-informacoes">
+
+            <span class="player-tipo"
+                  th:text="${tipo == 'movie' ? 'FILME' : 'SÉRIE'}">
+                FILME
+            </span>
+
+            <h1 th:text="${titulo}">Título do conteúdo</h1>
+
+        </div>
+
+        <div class="player-video-container">
+
+            <video
+                id="movieplexVideo"
+                class="movieplex-video"
+                controls
+                autoplay
+                playsinline
+                preload="metadata"
+                th:poster="${posterPath != null and !posterPath.isEmpty()
+                    ? 'https://image.tmdb.org/t/p/w780' + posterPath
+                    : ''}">
+
+                <source th:src="${videoUrl}" type="video/mp4">
+
+                Seu navegador não suporta a reprodução de vídeos.
+
+            </video>
+
+        </div>
+
+        <div class="player-rodape">
+
+            <span>
+                <span class="player-status"></span>
+                Reproduzindo no MoviePlex
+            </span>
+
+            <span class="player-aviso" id="salvamentoStatus">
+                Progresso salvo automaticamente
+            </span>
+
+        </div>
+
+    </main>
+
+    <script th:inline="javascript">
+
+        const video = document.getElementById("movieplexVideo");
+
+        const tmdbId = /*[[${tmdbId}]]*/ 0;
+        const tipo = /*[[${tipo}]]*/ "movie";
+        const titulo = /*[[${titulo}]]*/ "";
+        const posterPath = /*[[${posterPath}]]*/ "";
+
+        const progressoInicial = /*[[${progresso}]]*/ 0;
+
+        const statusSalvamento =
+            document.getElementById("salvamentoStatus");
+
+        let ultimoSalvamento = 0;
+        let salvamentoEmAndamento = false;
+
+        function atualizarStatus(mensagem) {
+            statusSalvamento.textContent = mensagem;
+        }
+
+        async function salvarProgresso() {
+
+            if (!video || !video.duration ||
+                !Number.isFinite(video.currentTime) ||
+                salvamentoEmAndamento) {
+                return;
+            }
+
+            if (video.currentTime <= 0) {
+                return;
+            }
+
+            if (video.ended) {
+                // O evento ended será responsável pelo salvamento final.
+                return;
+            }
+
+            const tempo = video.currentTime;
+            const duracao = video.duration;
+
+            if (tempo >= duracao) {
+                return;
+            }
+
+            salvamentoEmAndamento = true;
+
+            const dados = new URLSearchParams();
+
+            dados.append("tmdbId", tmdbId);
+            dados.append("tipo", tipo);
+            dados.append("titulo", titulo);
+            dados.append("posterPath", posterPath);
+            dados.append("tempo", tempo);
+            dados.append("duracao", duracao);
+
+            try {
+
+                const resposta = await fetch("/assistir/progresso", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/x-www-form-urlencoded"
+                    },
+                    body: dados
+                });
+
+                if (resposta.ok) {
+                    ultimoSalvamento = tempo;
+                    atualizarStatus("✓ Progresso salvo automaticamente");
+                } else {
+                    atualizarStatus("Não foi possível salvar o progresso");
+                }
+
+            } catch (erro) {
+                console.error("Erro ao salvar progresso:", erro);
+                atualizarStatus("Erro ao salvar o progresso");
+            } finally {
+                salvamentoEmAndamento = false;
+            }
+        }
+
+        // Recupera a posição anterior quando os metadados estiverem disponíveis.
+
+        video.addEventListener("loadedmetadata", function () {
+
+            if (progressoInicial > 0 &&
+                progressoInicial < video.duration) {
+
+                video.currentTime = progressoInicial;
+                atualizarStatus("Continuando de onde você parou");
+            }
+
+        });
+
+        // Salva periodicamente durante a reprodução.
+
+        video.addEventListener("timeupdate", function () {
+
+            if (video.currentTime - ultimoSalvamento >= 10) {
+                salvarProgresso();
+            }
+
+        });
+
+        // Salva ao pausar.
+
+        video.addEventListener("pause", function () {
+            if (!video.ended) {
+                salvarProgresso();
+            }
+        });
+
+        // Salva o progresso final e marca como concluído no serviço.
+
+        video.addEventListener("ended", async function () {
+
+            const dados = new URLSearchParams();
+
+            dados.append("tmdbId", tmdbId);
+            dados.append("tipo", tipo);
+            dados.append("titulo", titulo);
+            dados.append("posterPath", posterPath);
+            dados.append("tempo", video.duration);
+            dados.append("duracao", video.duration);
+
+            try {
+
+                const resposta = await fetch("/assistir/progresso", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/x-www-form-urlencoded"
+                    },
+                    body: dados
+                });
+
+                if (resposta.ok) {
+                    atualizarStatus("✓ Conteúdo concluído");
+                }
+
+            } catch (erro) {
+                console.error("Erro ao finalizar reprodução:", erro);
+            }
+
+        });
+
+        // Última tentativa de salvamento ao sair da página.
+
+        window.addEventListener("pagehide", function () {
+
+            if (!video || !video.duration ||
+                video.currentTime <= 0 || video.ended) {
+                return;
+            }
+
+            const dados = new URLSearchParams();
+
+            dados.append("tmdbId", tmdbId);
+            dados.append("tipo", tipo);
+            dados.append("titulo", titulo);
+            dados.append("posterPath", posterPath);
+            dados.append("tempo", video.currentTime);
+            dados.append("duracao", video.duration);
+
+            const blob = new Blob(
+                [dados.toString()],
+                { type: "application/x-www-form-urlencoded" }
+            );
+
+            navigator.sendBeacon("/assistir/progresso", blob);
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+movieplex\model\Historico.class
+movieplex\MoviePlexApplication.class
+movieplex\model\Assinatura.class
+movieplex\model\Playlist.class
+movieplex\service\UsuarioService.class
+movieplex\model\Usuario.class

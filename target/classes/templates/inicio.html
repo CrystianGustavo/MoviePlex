@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MoviePlex | Início</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* CONTINUAR ASSISTINDO */
+
+        .continuar-secao {
+            margin: 35px 0 45px;
+        }
+
+        .continuar-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 22px;
+        }
+
+        .continuar-card {
+            display: flex;
+            gap: 15px;
+            padding: 14px;
+            background: #111c31;
+            border: 1px solid rgba(74, 144, 226, 0.18);
+            border-radius: 12px;
+            text-decoration: none;
+            color: #fff;
+            transition: 0.3s ease;
+            min-width: 0;
+        }
+
+        .continuar-card:hover {
+            transform: translateY(-4px);
+            border-color: #2583ff;
+            box-shadow: 0 8px 25px rgba(0, 100, 255, 0.16);
+        }
+
+        .continuar-poster {
+            width: 95px;
+            min-width: 95px;
+            height: 135px;
+            object-fit: cover;
+            border-radius: 7px;
+            background: #202c40;
+        }
+
+        .continuar-placeholder {
+            width: 95px;
+            min-width: 95px;
+            height: 135px;
+            border-radius: 7px;
+            background: #202c40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2583ff;
+            font-size: 35px;
+            font-weight: bold;
+        }
+
+        .continuar-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .continuar-tipo {
+            color: #2583ff;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .continuar-info h3 {
+            font-size: 15px;
+            margin: 0 0 12px;
+            line-height: 1.4;
+        }
+
+        .continuar-progresso {
+            width: 100%;
+            height: 6px;
+            background: #29374d;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 7px;
+        }
+
+        .continuar-progresso-preenchido {
+            height: 100%;
+            background: linear-gradient(90deg, #0878ff, #35b5ff);
+            border-radius: 10px;
+        }
+
+        .continuar-percentual {
+            color: #aab8cc;
+            font-size: 11px;
+        }
+
+        .continuar-acao {
+            color: #45a4ff;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .continuar-lista {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="catalogo-page">
+
+    <!-- CABEÇALHO -->
+    <header class="catalogo-header">
+
+        <a th:href="@{/inicio}" class="logo">
+            <span class="logo-icon">M</span>
+            <h1>Movie<span>Plex</span></h1>
+        </a>
+
+        <nav class="catalogo-nav">
+
+            <a th:href="@{/inicio}" class="active">Início</a>
+
+            <form th:action="@{/pesquisar}" method="get" class="pesquisa-header">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Buscar filmes e séries..."
+                    aria-label="Buscar filmes e séries"
+                    required>
+                <button type="submit" aria-label="Pesquisar">⌕</button>
+            </form>
+
+            <a th:href="@{/planos}">Planos</a>
+            <a th:href="@{/minha-lista}">Minha Lista</a>
+            <a th:href="@{/minha-conta}">Minha Conta</a>
+
+            <span class="usuario-boas-vindas">
+                Olá, <strong th:text="${nome}">Usuário</strong>
+            </span>
+
+            <a th:href="@{/sair}" class="sair-button">Sair</a>
+
+        </nav>
+
+    </header>
+
+    <main class="catalogo-main">
+
+        <!-- DESTAQUE PRINCIPAL -->
+        <section class="hero-catalogo" th:if="${not #lists.isEmpty(emAlta)}">
+
+            <img class="hero-backdrop"
+                 th:if="${emAlta[0].backdropUrl != null}"
+                 th:src="${emAlta[0].backdropUrl}"
+                 th:alt="${emAlta[0].titulo}">
+
+            <div class="hero-overlay"></div>
+
+            <a class="hero-link"
+               th:href="@{/detalhes/{id}(id=${emAlta[0].id}, tipo=${emAlta[0].tipo})}">
+
+                <div class="hero-conteudo">
+
+                    <span class="hero-etiqueta">DESTAQUE DA SEMANA</span>
+
+                    <h2 th:text="${emAlta[0].titulo}">
+                        Título do conteúdo
+                    </h2>
+
+                    <p th:text="${emAlta[0].sinopse}">
+                        Sinopse do conteúdo.
+                    </p>
+
+                    <div class="hero-informacoes">
+
+                        <span th:text="${emAlta[0].tipo == 'movie' ? 'Filme' : 'Série'}">
+                            Filme
+                        </span>
+
+                        <span>
+                            ★
+                            <span th:text="${#numbers.formatDecimal(emAlta[0].nota, 1, 1)}">
+                                8.5
+                            </span>
+                        </span>
+
+                    </div>
+
+                    <span class="hero-assistir">Ver detalhes →</span>
+
+                </div>
+
+            </a>
+
+        </section>
+
+        <section class="hero-vazio" th:if="${#lists.isEmpty(emAlta)}">
+            <h2>Bem-vindo ao MoviePlex!</h2>
+            <p>Estamos preparando seu catálogo. Tente novamente em instantes.</p>
+        </section>
+
+        <!-- CONTINUAR ASSISTINDO -->
+        <section class="catalogo-secao continuar-secao"
+                 th:if="${not #lists.isEmpty(continuarAssistindo)}">
+
+            <div class="secao-titulo">
+                <h2>Continuar assistindo</h2>
+                <span>Continue de onde você parou</span>
+            </div>
+
+            <div class="continuar-lista">
+
+                <a class="continuar-card"
+                   th:each="item : ${continuarAssistindo}"
+                   th:href="@{/assistir/{id}(id=${item.tmdbId}, tipo=${item.tipo})}"
+                   th:with="percentual=${item.duracao > 0 ? (item.tempo * 100.0 / item.duracao) : 0}">
+
+                    <img class="continuar-poster"
+                         th:if="${item.posterPath != null and !#strings.isEmpty(item.posterPath)}"
+                         th:src="@{'https://image.tmdb.org/t/p/w342' + ${item.posterPath}}"
+                         th:alt="${item.titulo}"
+                         loading="lazy">
+
+                    <div class="continuar-placeholder"
+                         th:if="${item.posterPath == null or #strings.isEmpty(item.posterPath)}">
+                        M
+                    </div>
+
+                    <div class="continuar-info">
+
+                        <span class="continuar-tipo"
+                              th:text="${item.tipo == 'movie' ? 'FILME' : 'SÉRIE'}">
+                            FILME
+                        </span>
+
+                        <h3 th:text="${item.titulo}">
+                            Título do conteúdo
+                        </h3>
+
+                        <div class="continuar-progresso">
+
+                            <div class="continuar-progresso-preenchido"
+                                 th:style="|width: ${percentual > 100 ? 100 : percentual}%;|">
+                            </div>
+
+                        </div>
+
+                        <span class="continuar-percentual"
+                              th:text="|${#numbers.formatDecimal(percentual, 1, 0)}% assistido|">
+                            50% assistido
+                        </span>
+
+                        <span class="continuar-acao">
+                            Continuar assistindo →
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- EM ALTA -->
+        <section class="catalogo-secao" th:if="${not #lists.isEmpty(emAlta)}">
+
+            <div class="secao-titulo">
+                <h2>Em alta</h2>
+                <span>Os conteúdos mais comentados</span>
+            </div>
+
+            <div class="catalogo-lista">
+
+                <a class="conteudo-card"
+                   th:each="conteudo : ${emAlta}"
+                   th:href="@{/detalhes/{id}(id=${conteudo.id}, tipo=${conteudo.tipo})}">
+
+                    <div class="poster-container">
+
+                        <img th:if="${conteudo.posterUrl != null}"
+                             th:src="${conteudo.posterUrl}"
+                             th:alt="${conteudo.titulo}"
+                             loading="lazy">
+
+                        <div class="poster-placeholder"
+                             th:if="${conteudo.posterUrl == null}">
+                            <span>M</span>
+                        </div>
+
+                        <span class="tipo-badge"
+                              th:text="${conteudo.tipo == 'movie' ? 'FILME' : 'SÉRIE'}">
+                            FILME
+                        </span>
+
+                    </div>
+
+                    <div class="conteudo-info">
+
+                        <h3 th:text="${conteudo.titulo}">Título</h3>
+
+                        <span class="avaliacao">
+                            ★
+                            <span th:text="${#numbers.formatDecimal(conteudo.nota, 1, 1)}">
+                                8.5
+                            </span>
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- FILMES POPULARES -->
+        <section class="catalogo-secao" th:if="${not #lists.isEmpty(filmes)}">
+
+            <div class="secao-titulo">
+                <h2>Filmes populares</h2>
+                <span>Filmes que estão conquistando o público</span>
+            </div>
+
+            <div class="catalogo-lista">
+
+                <a class="conteudo-card"
+                   th:each="conteudo : ${filmes}"
+                   th:href="@{/detalhes/{id}(id=${conteudo.id}, tipo=${conteudo.tipo})}">
+
+                    <div class="poster-container">
+
+                        <img th:if="${conteudo.posterUrl != null}"
+                             th:src="${conteudo.posterUrl}"
+                             th:alt="${conteudo.titulo}"
+                             loading="lazy">
+
+                        <div class="poster-placeholder"
+                             th:if="${conteudo.posterUrl == null}">
+                            <span>M</span>
+                        </div>
+
+                    </div>
+
+                    <div class="conteudo-info">
+
+                        <h3 th:text="${conteudo.titulo}">Título</h3>
+
+                        <span class="avaliacao">
+                            ★
+                            <span th:text="${#numbers.formatDecimal(conteudo.nota, 1, 1)}">
+                                8.5
+                            </span>
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- SÉRIES POPULARES -->
+        <section class="catalogo-secao" th:if="${not #lists.isEmpty(series)}">
+
+            <div class="secao-titulo">
+                <h2>Séries populares</h2>
+                <span>Histórias para acompanhar</span>
+            </div>
+
+            <div class="catalogo-lista">
+
+                <a class="conteudo-card"
+                   th:each="conteudo : ${series}"
+                   th:href="@{/detalhes/{id}(id=${conteudo.id}, tipo=${conteudo.tipo})}">
+
+                    <div class="poster-container">
+
+                        <img th:if="${conteudo.posterUrl != null}"
+                             th:src="${conteudo.posterUrl}"
+                             th:alt="${conteudo.titulo}"
+                             loading="lazy">
+
+                        <div class="poster-placeholder"
+                             th:if="${conteudo.posterUrl == null}">
+                            <span>M</span>
+                        </div>
+
+                    </div>
+
+                    <div class="conteudo-info">
+
+                        <h3 th:text="${conteudo.titulo}">Título</h3>
+
+                        <span class="avaliacao">
+                            ★
+                            <span th:text="${#numbers.formatDecimal(conteudo.nota, 1, 1)}">
+                                8.5
+                            </span>
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- LANÇAMENTOS DE FILMES -->
+        <section class="catalogo-secao"
+                 th:if="${not #lists.isEmpty(lancamentosFilmes)}">
+
+            <div class="secao-titulo">
+                <h2>Próximos lançamentos</h2>
+                <span>Filmes chegando em breve</span>
+            </div>
+
+            <div class="catalogo-lista">
+
+                <a class="conteudo-card"
+                   th:each="conteudo : ${lancamentosFilmes}"
+                   th:href="@{/detalhes/{id}(id=${conteudo.id}, tipo=${conteudo.tipo})}">
+
+                    <div class="poster-container">
+
+                        <img th:if="${conteudo.posterUrl != null}"
+                             th:src="${conteudo.posterUrl}"
+                             th:alt="${conteudo.titulo}"
+                             loading="lazy">
+
+                        <div class="poster-placeholder"
+                             th:if="${conteudo.posterUrl == null}">
+                            <span>M</span>
+                        </div>
+
+                    </div>
+
+                    <div class="conteudo-info">
+
+                        <h3 th:text="${conteudo.titulo}">Título</h3>
+
+                        <span class="data-lancamento"
+                              th:text="${#strings.isEmpty(conteudo.dataLancamento) ? 'Data não informada' : conteudo.dataLancamento}">
+                            Data de lançamento
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- SÉRIES EM EXIBIÇÃO -->
+        <section class="catalogo-secao"
+                 th:if="${not #lists.isEmpty(lancamentosSeries)}">
+
+            <div class="secao-titulo">
+                <h2>Séries em exibição</h2>
+                <span>Séries com episódios chegando</span>
+            </div>
+
+            <div class="catalogo-lista">
+
+                <a class="conteudo-card"
+                   th:each="conteudo : ${lancamentosSeries}"
+                   th:href="@{/detalhes/{id}(id=${conteudo.id}, tipo=${conteudo.tipo})}">
+
+                    <div class="poster-container">
+
+                        <img th:if="${conteudo.posterUrl != null}"
+                             th:src="${conteudo.posterUrl}"
+                             th:alt="${conteudo.titulo}"
+                             loading="lazy">
+
+                        <div class="poster-placeholder"
+                             th:if="${conteudo.posterUrl == null}">
+                            <span>M</span>
+                        </div>
+
+                    </div>
+
+                    <div class="conteudo-info">
+
+                        <h3 th:text="${conteudo.titulo}">Título</h3>
+
+                        <span class="data-lancamento"
+                              th:text="${#strings.isEmpty(conteudo.dataLancamento) ? 'Data não informada' : conteudo.dataLancamento}">
+                            Data de lançamento
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer class="catalogo-footer">
+        <p>© 2026 MoviePlex. Nenhum direito reservado. :D</p>
+        <p>Dados e imagens de filmes e séries fornecidos pela TMDB.</p>
+    </footer>
+
+</body>
+</html>

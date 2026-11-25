@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MoviePlex | Criar conta</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <main class="login-container">
+
+        <section class="login-card">
+
+            <div class="logo">
+                <span class="logo-icon">M</span>
+                <h1>Movie<span>Plex</span></h1>
+            </div>
+
+            <div class="login-header">
+                <h2>Crie sua conta</h2>
+                <p>Entre para o universo MoviePlex e aproveite seus conteúdos favoritos.</p>
+            </div>
+
+            <form class="login-form" th:action="@{/cadastro}" method="post">
+
+                <p th:if="${erro}" th:text="${erro}"
+                    style="color: #ff6b6b; margin-bottom: 15px;">
+                </p>
+
+                <p th:if="${sucesso}" th:text="${sucesso}"
+                    style="color: #55d99b; margin-bottom: 15px;">
+                </p>
+
+                <div class="form-group">
+                    <label for="nome">Nome completo</label>
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        placeholder="Digite seu nome"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Crie uma senha"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmarSenha">Confirmar senha</label>
+                    <input
+                        type="password"
+                        id="confirmarSenha"
+                        name="confirmarSenha"
+                        placeholder="Digite a senha novamente"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-button">
+                    Criar minha conta
+                </button>
+
+            </form>
+
+            <div class="register-link">
+                <p>Já possui uma conta?
+                    <a th:href="@{/}">Entrar</a>
+                </p>
+            </div>
+
+            <footer>
+                <p>© 2026 MoviePlex. Todos os direitos reservados.</p>
+            </footer>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,12 +1,11 @@
-
-package main.java.movieplex.service;
-
-import movieplex.model.Avaliacao;
-import movieplex.model.Usuario;
-import movieplex.model.Producao;
+package movieplex.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import movieplex.model.Avaliacao;
+import movieplex.model.Producao;
+import movieplex.model.Usuario;
 
 public class AvaliacaoService {
 

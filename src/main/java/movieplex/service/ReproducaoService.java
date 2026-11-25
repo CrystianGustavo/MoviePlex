@@ -1,17 +1,20 @@
 
-package main.java.movieplex.service;
-
-import movieplex.model.Usuario;
-import movieplex.model.Assinatura;
-import movieplex.model.Producao;
-import movieplex.model.Historico;
+package movieplex.service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
+import movieplex.model.Assinatura;
+import movieplex.model.Historico;
+import movieplex.model.Producao;
+import movieplex.model.Usuario;
+
+@Service
 public class ReproducaoService {
 
-    private Map<Historico, Boolean> reproducoes;
+    private final Map<Historico, Boolean> reproducoes;
     private int volume;
 
     public ReproducaoService() {
@@ -22,13 +25,13 @@ public class ReproducaoService {
     // Verificar se o usuário possui assinatura ativa
     private boolean possuiAssinaturaAtiva(Usuario usuario) {
 
-        for (Assinatura assinatura : usuario.getAssinaturas()) {
-            if (assinatura.validarAssinatura()) {
-                return true;
-            }
+        if (usuario == null) {
+            return false;
         }
 
-        return false;
+        Assinatura assinatura = usuario.getAssinatura();
+
+        return assinatura != null && assinatura.validarAssinatura();
     }
 
     // R8 - Assistir filme ou série
@@ -42,7 +45,8 @@ public class ReproducaoService {
         Historico historico = new Historico(producao, 0, 0);
 
         usuario.adicionarHistorico(historico);
-        producoes.put(historico, true);
+
+        reproducoes.put(historico, true);
 
         producao.reproduzir();
 
@@ -52,8 +56,8 @@ public class ReproducaoService {
     // R9 - Pausar reprodução
     public boolean pausar(Historico historico) {
 
-        if (historico == null || !Boolean.TRUE.equals(
-                reproducoes.get(historico))) {
+        if (historico == null
+                || !Boolean.TRUE.equals(reproducoes.get(historico))) {
             return false;
         }
 
@@ -109,7 +113,9 @@ public class ReproducaoService {
 
         reproducoes.put(historico, true);
 
-        historico.getProducao().reproduzir();
+        if (historico.getProducao() != null) {
+            historico.getProducao().reproduzir();
+        }
 
         System.out.println(
                 "Retomando em: " + historico.consultarProgresso()
@@ -119,9 +125,10 @@ public class ReproducaoService {
     }
 
     // Atualizar progresso
-    public boolean atualizarProgresso(Historico historico,
-                                       double tempo,
-                                       int temporada) {
+    public boolean atualizarProgresso(
+            Historico historico,
+            double tempo,
+            int temporada) {
 
         if (historico == null
                 || !Boolean.TRUE.equals(reproducoes.get(historico))) {
